@@ -1,67 +1,92 @@
 import { notFound } from "next/navigation"
-import { getProductBySlug, getShopById } from "@/lib/data"
+import { supabase } from "@/lib/supabase"
+import { products as mockProducts, getShopById } from "@/lib/data"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import type { Product } from "@/lib/types"
 
-function PriceChart({ history }: { history: { date: string; price: number }[] }) {
-  if (!history || history.length === 0) return null
+async function getProduct(slug: string) {
+  const { data } = await supabase
+    .from("products")
+    .select(`
+      id, name, slug, brand, description, image_url, ean,
+      category:categories(name, slug)
+    `)
+    .eq("slug", slug)
+    .single()
 
-  const minPrice = Math.min(...history.map((h) => h.price))
-  const maxPrice = Math.max(...history.map((h) => h.price))
-  const range = maxPrice - minPrice || 1
+  if (!data) return mockProducts.find((p) => p.slug === slug) || null
 
-  return (
-    <div className="rounded-xl border bg-white p-6">
-      <h3 className="text-sm font-semibold text-zinc-900 mb-4">Preisentwicklung (30 Tage)</h3>
-      <div className="relative h-48">
-        <div className="absolute inset-0 flex items-end">
-          {history.map((point, i) => {
-            const height = ((point.price - minPrice) / range) * 100
-            const isLowest = point.price === minPrice
-            const isHighest = point.price === maxPrice
-            return (
-              <div
-                key={i}
-                className="flex-1 flex flex-col items-center justify-end group relative"
-              >
-                <div
-                  className={`w-full mx-0.5 rounded-t transition-all hover:opacity-80 ${
-                    isLowest ? "bg-green-500" : isHighest ? "bg-red-400" : "bg-blue-500"
-                  }`}
-                  style={{ height: `${Math.max(height, 2)}%` }}
-                />
-                <div className="absolute bottom-full mb-1 hidden group-hover:block bg-zinc-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
-                  CHF {point.price} ({point.date})
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-      <div className="flex justify-between mt-2 text-xs text-zinc-400">
-        <span>{history[0]?.date}</span>
-        <span>{history[history.length - 1]?.date}</span>
-      </div>
-    </div>
-  )
-}
+  const { data: productShops } = await supabase
+    .from("product_shops")
+    .select(`
+      id, in_stock, product_url,
+      shop_id,
+      shop:shops(id, name, slug),
+      prices:price_history(price, currency, is_promotion, scraped_at)
+    `)
+    .eq("product_id", data.id)
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProductBySlug(params.slug)
+  const prices = (productShops || [])
+    .map((ps: any) => ({
+      shopId: ps.shop?.slug || "",
+      price: ps.prices?.[0]?.price || 0,
+      currency: "CHF",
+      isPromotion: ps.prices?.[0]?.is_promotion || false,
+      inStock: ps.in_stock,
+      url: ps.product_url || "#",
+      updatedAt: ps.prices?.[0]?.scraped_at || "",
+    }))
+    .filter((p) => p.price > 0)
 
-  if (!product) {
-    notFound()
+  const { data: history } = await supabase
+    .from("price_history")
+    .select("price, scraped_at, product_shop_id")
+    .in("product_shop_id", (productShops || []).map((ps: any) => ps.id))
+    .order("scraped_at", { ascending: true })
+    .limit(60)
+
+  const priceHistory = (history || []).map((h: any) => ({
+    date: new Date(h.scraped_at).toISOString().split("T")[0],
+    price: h.price,
+    shopId: h.product_shop_id,
+  }))
+
+  const sorted = [...prices].sort((a, b) => a.price - b.price)
+
+  const product: Product = {
+    id: data.id,
+    name: data.name,
+    slug: data.slug,
+    brand: data.brand || "",
+    description: data.description || "",
+    image: data.image_url || "",
+    category: (data.category as any)?.name || "",
+    categorySlug: (data.category as any)?.slug || "",
+    ean: data.ean || "",
+    currency: "CHF",
+    lowestPrice: sorted[0]?.price || 0,
+    highestPrice: sorted[sorted.length - 1]?.price || 0,
+    shopCount: prices.length,
+    prices: sorted,
+    priceHistory,
   }
 
-  const sortedPrices = [...product.prices].sort((a, b) => a.price - b.price)
+  return product
+}
+
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const product = await getProduct(params.slug)
+  if (!product) notFound()
+
+  const sortedPrices = product.prices
   const bestPrice = sortedPrices[0]
-  const bestShop = getShopById(bestPrice.shopId)
+  const bestShop = bestPrice ? getShopById(bestPrice.shopId) : null
   const priceDiff = product.highestPrice - product.lowestPrice
-  const savingsPercent = Math.round((priceDiff / product.highestPrice) * 100)
+  const savingsPercent = product.highestPrice > 0 ? Math.round((priceDiff / product.highestPrice) * 100) : 0
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-zinc-500 mb-6">
         <Link href="/" className="hover:text-zinc-900">Home</Link>
         <span>/</span>
@@ -70,14 +95,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         <span className="text-zinc-900">{product.name}</span>
       </nav>
 
-      {/* Product Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div className="rounded-xl border bg-white p-8 flex items-center justify-center">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="max-h-80 object-contain"
-          />
+          <img src={product.image} alt={product.name} className="max-h-80 object-contain" />
         </div>
         <div className="space-y-4">
           <p className="text-sm font-medium text-blue-600 uppercase tracking-wide">{product.brand}</p>
@@ -87,75 +107,51 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             <Badge variant="secondary">{product.category}</Badge>
             <Badge variant="outline">EAN: {product.ean}</Badge>
           </div>
-          <div className="flex items-baseline gap-3">
-            <span className="text-4xl font-bold text-zinc-900">CHF {product.lowestPrice}</span>
-            <span className="text-xl text-zinc-400 line-through">CHF {product.highestPrice}</span>
-            <Badge className="bg-green-500 hover:bg-green-600 text-white">
-              -{savingsPercent}%
-            </Badge>
-          </div>
-          {bestShop && (
-            <p className="text-sm text-zinc-500">
-              Tiefster Preis bei <span className="font-medium text-zinc-700">{bestShop.name}</span>
-            </p>
+
+          {sortedPrices.length > 0 && (
+            <>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-bold text-zinc-900">CHF {product.lowestPrice}</span>
+                {product.highestPrice > product.lowestPrice && (
+                  <span className="text-xl text-zinc-400 line-through">CHF {product.highestPrice}</span>
+                )}
+                {savingsPercent > 0 && (
+                  <Badge className="bg-green-500 hover:bg-green-600 text-white">-{savingsPercent}%</Badge>
+                )}
+              </div>
+              {bestShop && (
+                <p className="text-sm text-zinc-500">
+                  Tiefster Preis bei <span className="font-medium text-zinc-700">{bestShop.name}</span>
+                </p>
+              )}
+
+              <div className="space-y-2 pt-2">
+                {sortedPrices.map((price) => {
+                  const shop = getShopById(price.shopId)
+                  if (!shop) return null
+                  return (
+                    <div key={price.shopId}
+                      className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${price.price === product.lowestPrice ? "border-green-200 bg-green-50" : "bg-white"}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 font-bold text-sm text-zinc-600">{shop.logo}</div>
+                        <div>
+                          <p className="text-sm font-semibold text-zinc-900">{shop.name}</p>
+                          <p className="text-xs text-zinc-400">{shop.deliveryCost === 0 ? "Kostenloser Versand" : `CHF ${shop.deliveryCost} Versand`} · {shop.deliveryTime}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${price.price === product.lowestPrice ? "text-green-600" : "text-zinc-900"}`}>CHF {price.price}</p>
+                        <div className="flex items-center gap-1 justify-end">
+                          {price.isPromotion && <Badge className="bg-red-500 text-white text-xs px-1.5 py-0">%</Badge>}
+                          <span className={`text-xs ${price.inStock ? "text-green-600" : "text-red-500"}`}>{price.inStock ? "Lagernd" : "Nicht lagernd"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
-
-          {/* Price Cards */}
-          <div className="space-y-2 pt-2">
-            {sortedPrices.map((price) => {
-              const shop = getShopById(price.shopId)
-              if (!shop) return null
-              return (
-                <div
-                  key={price.shopId}
-                  className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${
-                    price.price === product.lowestPrice
-                      ? "border-green-200 bg-green-50"
-                      : "bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 font-bold text-sm text-zinc-600">
-                      {shop.logo}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-zinc-900">{shop.name}</p>
-                      <p className="text-xs text-zinc-400">
-                        {shop.deliveryCost === 0 ? "Kostenloser Versand" : `CHF ${shop.deliveryCost} Versand`}
-                        {" · "}{shop.deliveryTime}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-lg font-bold ${price.price === product.lowestPrice ? "text-green-600" : "text-zinc-900"}`}>
-                      CHF {price.price}
-                    </p>
-                    <div className="flex items-center gap-1 justify-end">
-                      {price.isPromotion && (
-                        <Badge className="bg-red-500 text-white text-xs px-1.5 py-0">%</Badge>
-                      )}
-                      {price.inStock ? (
-                        <span className="text-xs text-green-600">Lagernd</span>
-                      ) : (
-                        <span className="text-xs text-red-500">Nicht lagernd</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Price Chart */}
-      <PriceChart history={product.priceHistory} />
-
-      {/* Similar Products */}
-      <div className="mt-12">
-        <h2 className="text-xl font-semibold mb-4">Ähnliche Produkte</h2>
-        <div className="text-sm text-zinc-500">
-          Weitere Produkte aus der Kategorie <Link href={`/products?category=${product.categorySlug}`} className="text-blue-600 hover:underline">{product.category}</Link>
         </div>
       </div>
     </div>
