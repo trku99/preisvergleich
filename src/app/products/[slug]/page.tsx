@@ -122,7 +122,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   const shop = getShopById(price.shopId)
                   if (!shop) return null
                   return (
-                    <div key={price.shopId} className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${price.price === product.lowestPrice ? "border-green-200 bg-green-50" : "bg-white"}`}>
+                    <a
+                      key={price.shopId}
+                      href={price.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${price.price === product.lowestPrice ? "border-green-200 bg-green-50" : "bg-white"}`}
+                    >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 font-bold text-sm text-zinc-600">{shop.logo}</div>
                         <div>
@@ -137,7 +143,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                           <span className={`text-xs ${price.inStock ? "text-green-600" : "text-red-500"}`}>{price.inStock ? "Lagernd" : "Nicht lagernd"}</span>
                         </div>
                       </div>
-                    </div>
+                    </a>
                   )
                 })}
               </div>
