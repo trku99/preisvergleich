@@ -270,6 +270,7 @@ for (const [cat, items] of Object.entries(productGroups)) {
     const ean = '2' + String(Math.floor(Math.random() * 900000000000)).padStart(12, "0")
     sql += `  INSERT INTO products (name, slug, brand, description, image_url, category_id, ean)
     VALUES ('${escapedName}', '${slug}', '${brand}', '${escapedName} - Top Preis in der Schweiz. Jetzt vergleichen.', 'https://placehold.co/400x400/e2e8f0/64748b?text=${brand}', ${catVar}, '${ean}')
+    ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
     RETURNING id INTO prod_id;
 `
     for (const s of shops) {
@@ -277,7 +278,9 @@ for (const [cat, items] of Object.entries(productGroups)) {
       shop_url = shopUrl(s.slug, escapedName).replace(/'/g, "''")
       shop_price = randPrice(basePrice)
       const inStock = Math.random() < 0.85 ? "true" : "false"
-      sql += `  INSERT INTO product_shops (product_id, shop_id, product_url, in_stock) VALUES (prod_id, (SELECT id FROM shops WHERE slug = '${s.slug}'), '${shop_url}', ${inStock}) RETURNING id INTO ps_id;
+      sql += `  INSERT INTO product_shops (product_id, shop_id, product_url, in_stock) VALUES (prod_id, (SELECT id FROM shops WHERE slug = '${s.slug}'), '${shop_url}', ${inStock})
+    ON CONFLICT (product_id, shop_id) DO UPDATE SET product_url = EXCLUDED.product_url
+    RETURNING id INTO ps_id;
   INSERT INTO price_history (product_shop_id, price, currency, scraped_at) VALUES (ps_id, ${shop_price}, 'CHF', NOW() - INTERVAL '${randDays()} days');
 `
     }
