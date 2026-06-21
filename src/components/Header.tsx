@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { SearchBar } from "./SearchBar"
 import { AuthButton } from "./AuthButton"
+import { LanguageSwitcher } from "./LanguageSwitcher"
 
 export function Header() {
   return (
@@ -15,6 +16,7 @@ export function Header() {
           <SearchBar />
         </div>
         <nav className="flex items-center gap-4 shrink-0">
+          <LanguageSwitcher />
           <Link href="/products" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Produkte</Link>
           <Link href="/favorites" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Favoriten</Link>
           <AuthButton />

@@ -3,10 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export function SearchBar() {
   const [query, setQuery] = useState("")
   const router = useRouter()
+  const { t } = useT()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,7 +32,7 @@ export function SearchBar() {
       </svg>
       <Input
         type="search"
-        placeholder="Produkt suchen (z.B. iPhone 17, Sony XM5)..."
+        placeholder={t("search.placeholder")}
         className="h-10 w-full rounded-xl border-zinc-200 bg-zinc-50 pl-10 text-sm focus:bg-white"
         value={query}
         onChange={(e) => setQuery(e.target.value)}

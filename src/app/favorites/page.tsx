@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase-client"
 import Link from "next/link"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export default function FavoritesPage() {
   const [products, setProducts] = useState<any[]>([])
   const [user, setUser] = useState<any>(null)
   const supabase = createClient()
+  const { t } = useT()
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -34,13 +36,13 @@ export default function FavoritesPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Favoriten</h1>
-        <p className="text-zinc-500 mb-4">Melde dich an, um deine Favoriten zu sehen.</p>
+        <h1 className="text-2xl font-bold mb-4">{t("favorites.title")}</h1>
+        <p className="text-zinc-500 mb-4">{t("favorites.login")}</p>
         <button
           onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/auth/callback` } })}
           className="rounded-xl bg-blue-600 px-6 py-2 text-white font-medium hover:bg-blue-700"
         >
-          Anmelden
+          {t("auth.login")}
         </button>
       </div>
     )
@@ -48,9 +50,9 @@ export default function FavoritesPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Meine Favoriten</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("favorites.title")}</h1>
       {products.length === 0 ? (
-        <p className="text-zinc-500">Keine Favoriten vorhanden.</p>
+        <p className="text-zinc-500">{t("favorites.empty")}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {products.map((p) => (
