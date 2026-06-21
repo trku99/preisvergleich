@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { products as mockProducts, getShopById } from "@/lib/data"
 import { Badge } from "@/components/ui/badge"
+import { FavoriteButton } from "@/components/FavoriteButton"
+import { PriceAlertForm } from "@/components/PriceAlertForm"
 import Link from "next/link"
 import type { Product } from "@/lib/types"
 
@@ -21,6 +23,7 @@ async function getProduct(slug: string) {
 
       const prices = (productShops || [])
         .map((ps: any) => ({
+          productShopId: ps.id,
           shopId: (ps.shop as any)?.slug || "",
           price: ps.prices?.[0]?.price || 0,
           currency: "CHF" as const,
@@ -99,6 +102,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <Badge variant="outline">EAN: {product.ean}</Badge>
           </div>
 
+          <div className="flex items-center gap-2">
+            <FavoriteButton productId={product.id} />
+          </div>
+
           {sortedPrices.length > 0 && (
             <>
               <div className="flex items-baseline gap-3">
@@ -133,6 +140,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     </div>
                   )
                 })}
+              </div>
+
+              <div className="pt-4 border-t border-zinc-100">
+                <p className="text-sm font-medium text-zinc-700 mb-2">Preisalarm einrichten</p>
+                {bestPrice.productShopId && <PriceAlertForm productShopId={bestPrice.productShopId} productName={product.name} />}
               </div>
             </>
           )}

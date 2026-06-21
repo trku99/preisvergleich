@@ -9,6 +9,7 @@ export interface Shop {
 }
 
 export interface Price {
+  productShopId?: string
   shopId: string
   price: number
   currency: string
