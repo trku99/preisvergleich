@@ -6,84 +6,74 @@ import Link from "next/link"
 import type { Product } from "@/lib/types"
 
 async function getProduct(slug: string) {
-  const { data } = await supabase
-    .from("products")
-    .select(`
-      id, name, slug, brand, description, image_url, ean,
-      category:categories(name, slug)
-    `)
-    .eq("slug", slug)
-    .single()
+  try {
+    const { data } = await supabase
+      .from("products")
+      .select(`id, name, slug, brand, description, image_url, ean, category:categories(name, slug)`)
+      .eq("slug", slug)
+      .single()
 
-  if (!data) return mockProducts.find((p) => p.slug === slug) || null
+    if (data) {
+      const { data: productShops } = await supabase
+        .from("product_shops")
+        .select(`id, in_stock, product_url, shop_id, shop:shops(id, name, slug), prices:price_history(price, currency, is_promotion, scraped_at)`)
+        .eq("product_id", data.id)
 
-  const { data: productShops } = await supabase
-    .from("product_shops")
-    .select(`
-      id, in_stock, product_url,
-      shop_id,
-      shop:shops(id, name, slug),
-      prices:price_history(price, currency, is_promotion, scraped_at)
-    `)
-    .eq("product_id", data.id)
+      const prices = (productShops || [])
+        .map((ps: any) => ({
+          shopId: (ps.shop as any)?.slug || "",
+          price: ps.prices?.[0]?.price || 0,
+          currency: "CHF" as const,
+          isPromotion: ps.prices?.[0]?.is_promotion || false,
+          inStock: ps.in_stock,
+          url: ps.product_url || "#",
+          updatedAt: ps.prices?.[0]?.scraped_at || "",
+        }))
+        .filter((p) => p.price > 0)
+        .sort((a, b) => a.price - b.price)
 
-  const prices = (productShops || [])
-    .map((ps: any) => ({
-      shopId: ps.shop?.slug || "",
-      price: ps.prices?.[0]?.price || 0,
-      currency: "CHF",
-      isPromotion: ps.prices?.[0]?.is_promotion || false,
-      inStock: ps.in_stock,
-      url: ps.product_url || "#",
-      updatedAt: ps.prices?.[0]?.scraped_at || "",
-    }))
-    .filter((p) => p.price > 0)
+      const { data: history } = await supabase
+        .from("price_history")
+        .select("price, scraped_at")
+        .in("product_shop_id", (productShops || []).map((ps: any) => ps.id))
+        .order("scraped_at", { ascending: true })
+        .limit(60)
 
-  const { data: history } = await supabase
-    .from("price_history")
-    .select("price, scraped_at, product_shop_id")
-    .in("product_shop_id", (productShops || []).map((ps: any) => ps.id))
-    .order("scraped_at", { ascending: true })
-    .limit(60)
+      return {
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        brand: data.brand || "",
+        description: data.description || "",
+        image: data.image_url || "",
+        category: (data.category as any)?.name || "",
+        categorySlug: (data.category as any)?.slug || "",
+        ean: data.ean || "",
+        currency: "CHF" as const,
+        lowestPrice: prices[0]?.price || 0,
+        highestPrice: prices[prices.length - 1]?.price || 0,
+        shopCount: prices.length,
+        prices,
+        priceHistory: (history || []).map((h: any) => ({
+          date: new Date(h.scraped_at).toISOString().split("T")[0],
+          price: h.price,
+          shopId: h.product_shop_id,
+        })),
+      } as Product
+    }
+  } catch {}
 
-  const priceHistory = (history || []).map((h: any) => ({
-    date: new Date(h.scraped_at).toISOString().split("T")[0],
-    price: h.price,
-    shopId: h.product_shop_id,
-  }))
-
-  const sorted = [...prices].sort((a, b) => a.price - b.price)
-
-  const product: Product = {
-    id: data.id,
-    name: data.name,
-    slug: data.slug,
-    brand: data.brand || "",
-    description: data.description || "",
-    image: data.image_url || "",
-    category: (data.category as any)?.name || "",
-    categorySlug: (data.category as any)?.slug || "",
-    ean: data.ean || "",
-    currency: "CHF",
-    lowestPrice: sorted[0]?.price || 0,
-    highestPrice: sorted[sorted.length - 1]?.price || 0,
-    shopCount: prices.length,
-    prices: sorted,
-    priceHistory,
-  }
-
-  return product
+  return mockProducts.find((p) => p.slug === slug) || null
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const product = await getProduct(params.slug)
   if (!product) notFound()
 
-  const sortedPrices = product.prices
+  const sortedPrices = [...product.prices].sort((a, b) => a.price - b.price)
   const bestPrice = sortedPrices[0]
   const bestShop = bestPrice ? getShopById(bestPrice.shopId) : null
-  const priceDiff = product.highestPrice - product.lowestPrice
-  const savingsPercent = product.highestPrice > 0 ? Math.round((priceDiff / product.highestPrice) * 100) : 0
+  const savingsPercent = product.highestPrice > 0 ? Math.round(((product.highestPrice - product.lowestPrice) / product.highestPrice) * 100) : 0
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
@@ -115,23 +105,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 {product.highestPrice > product.lowestPrice && (
                   <span className="text-xl text-zinc-400 line-through">CHF {product.highestPrice}</span>
                 )}
-                {savingsPercent > 0 && (
-                  <Badge className="bg-green-500 hover:bg-green-600 text-white">-{savingsPercent}%</Badge>
-                )}
+                {savingsPercent > 0 && <Badge className="bg-green-500 text-white">-{savingsPercent}%</Badge>}
               </div>
-              {bestShop && (
-                <p className="text-sm text-zinc-500">
-                  Tiefster Preis bei <span className="font-medium text-zinc-700">{bestShop.name}</span>
-                </p>
-              )}
+              {bestShop && <p className="text-sm text-zinc-500">Tiefster Preis bei <span className="font-medium text-zinc-700">{bestShop.name}</span></p>}
 
               <div className="space-y-2 pt-2">
                 {sortedPrices.map((price) => {
                   const shop = getShopById(price.shopId)
                   if (!shop) return null
                   return (
-                    <div key={price.shopId}
-                      className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${price.price === product.lowestPrice ? "border-green-200 bg-green-50" : "bg-white"}`}>
+                    <div key={price.shopId} className={`flex items-center justify-between rounded-xl border p-4 transition-all hover:shadow-md ${price.price === product.lowestPrice ? "border-green-200 bg-green-50" : "bg-white"}`}>
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 font-bold text-sm text-zinc-600">{shop.logo}</div>
                         <div>
@@ -142,7 +125,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                       <div className="text-right">
                         <p className={`text-lg font-bold ${price.price === product.lowestPrice ? "text-green-600" : "text-zinc-900"}`}>CHF {price.price}</p>
                         <div className="flex items-center gap-1 justify-end">
-                          {price.isPromotion && <Badge className="bg-red-500 text-white text-xs px-1.5 py-0">%</Badge>}
+                          {price.isPromotion && <Badge className="bg-red-500 text-white text-xs">%</Badge>}
                           <span className={`text-xs ${price.inStock ? "text-green-600" : "text-red-500"}`}>{price.inStock ? "Lagernd" : "Nicht lagernd"}</span>
                         </div>
                       </div>
