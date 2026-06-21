@@ -1,15 +1,79 @@
 import Link from "next/link"
-import { products, categories } from "@/lib/data"
+import { supabase } from "@/lib/supabase"
 import { ProductCard } from "@/components/ProductCard"
 import { Badge } from "@/components/ui/badge"
+import type { Product } from "@/lib/types"
+import { products as mockProducts, categories as mockCats } from "@/lib/data"
 
-const features = [
-  { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", title: "Echtzeit-Preise", desc: "Preise werden alle 6 Stunden aktualisiert" },
-  { icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", title: "Preisvergleich", desc: "Alle Shops auf einen Blick" },
-  { icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9", title: "Preisalarm", desc: "Benachrichtigung bei Preisänderungen" },
-]
+async function getProducts() {
+  const { data: products } = await supabase.from("products").select(`
+    id, name, slug, brand, description, image_url, ean,
+    category:categories(name, slug)
+  `)
+  if (!products || products.length === 0) return mockProducts as Product[]
 
-export default function Home() {
+  return products.map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    brand: p.brand,
+    description: p.description,
+    image: p.image_url || `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(p.name.slice(0, 8))}`,
+    category: p.category?.name || "",
+    categorySlug: p.category?.slug || "",
+    ean: p.ean || "",
+    currency: "CHF" as const,
+    lowestPrice: 0,
+    highestPrice: 0,
+    shopCount: 0,
+    prices: [],
+    priceHistory: [],
+  }))
+}
+
+export default async function Home() {
+  const products = await getProducts()
+  const categories = mockCats
+
+  // Fetch prices for each product
+  const enrichedProducts = await Promise.all(
+    products.map(async (product) => {
+      const { data: productShops } = await supabase
+        .from("product_shops")
+        .select(`
+          id, in_stock,
+          shop:shops(id, name, slug),
+          prices:price_history(price, currency, is_promotion, scraped_at)
+        `)
+        .eq("product_id", product.id)
+
+      if (!productShops || productShops.length === 0) return product
+
+      const prices = productShops
+        .map((ps: any) => ({
+          shopId: ps.shop?.slug || "",
+          price: ps.prices?.[0]?.price || 0,
+          currency: "CHF",
+          isPromotion: ps.prices?.[0]?.is_promotion || false,
+          inStock: ps.in_stock,
+          url: "#",
+          updatedAt: ps.prices?.[0]?.scraped_at || "",
+        }))
+        .filter((p) => p.price > 0)
+        .sort((a, b) => a.price - b.price)
+
+      return {
+        ...product,
+        currency: "CHF" as const,
+        lowestPrice: prices[0]?.price || 0,
+        highestPrice: prices[prices.length - 1]?.price || 0,
+        shopCount: prices.length,
+        prices,
+        priceHistory: [],
+      } as Product
+    })
+  )
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <section className="py-16 sm:py-24 text-center">
@@ -22,7 +86,6 @@ export default function Home() {
         </h1>
         <p className="mt-4 text-lg text-zinc-500 max-w-xl mx-auto">
           Vergleiche Preise von über 6 Schweizer Online-Shops.
-          Galaxus, Digitec, Microspot, Brack, MediaMarkt und mehr.
         </p>
       </section>
 
@@ -49,23 +112,7 @@ export default function Home() {
           <Link href="/products" className="text-sm text-blue-600 hover:text-blue-700 font-medium">Alle Produkte →</Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {products.map((product) => (<ProductCard key={product.id} product={product} />))}
-        </div>
-      </section>
-
-      <section className="pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {features.map((f) => (
-            <div key={f.title} className="rounded-xl border bg-white p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 mb-4">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path d={f.icon} />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-zinc-900">{f.title}</h3>
-              <p className="mt-2 text-sm text-zinc-500">{f.desc}</p>
-            </div>
-          ))}
+          {enrichedProducts.map((product) => (<ProductCard key={product.id} product={product} />))}
         </div>
       </section>
     </div>
