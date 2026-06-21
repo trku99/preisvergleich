@@ -3,6 +3,9 @@ const { createClient } = require("@supabase/supabase-js")
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+console.log("SUPABASE_URL set:", !!supabaseUrl)
+console.log("SUPABASE_KEY set:", !!supabaseKey)
+
 if (!supabaseUrl || !supabaseKey) {
   console.error("Missing Supabase env vars")
   process.exit(1)
@@ -10,29 +13,23 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-function randomPriceChange(basePrice) {
-  const change = (Math.random() - 0.5) * basePrice * 0.1
-  const newPrice = Math.round((basePrice + change) * 100) / 100
-  return Math.max(Math.round(basePrice * 0.85), newPrice)
-}
-
-async function updatePrices() {
-  console.log("Updating prices...")
-
-  const { data: shops } = await supabase.from("shops").select("id, name")
-  if (!shops) return
-
+async function main() {
+  console.log("Checking database connection...")
+  const { data: shops, error } = await supabase.from("shops").select("id, name")
+  if (error) {
+    console.error("Database error:", error.message)
+    process.exit(1)
+  }
   console.log(`Found ${shops.length} shops`)
-
-  let total = 0
 
   for (const shop of shops) {
     const { data: productShops } = await supabase
       .from("product_shops")
-      .select("id, product_id")
+      .select("id")
       .eq("shop_id", shop.id)
-
     if (!productShops) continue
+
+    console.log(`Updating ${productShops.length} prices for ${shop.name}`)
 
     for (const ps of productShops) {
       const { data: lastPrice } = await supabase
@@ -44,23 +41,24 @@ async function updatePrices() {
         .single()
 
       const basePrice = lastPrice?.price || 100
-      const newPrice = randomPriceChange(basePrice)
-      const isPromotion = Math.random() < 0.15
+      const change = (Math.random() - 0.5) * basePrice * 0.1
+      const newPrice = Math.max(Math.round(basePrice * 0.85), Math.round((basePrice + change) * 100) / 100)
 
-      await supabase.from("price_history").insert({
+      const { error: insertError } = await supabase.from("price_history").insert({
         product_shop_id: ps.id,
         price: newPrice,
         currency: "CHF",
-        is_promotion: isPromotion,
+        is_promotion: Math.random() < 0.15,
       })
 
-      await supabase.from("product_shops").update({ in_stock: Math.random() > 0.1 }).eq("id", ps.id)
-
-      total++
+      if (insertError) console.error("Insert error:", insertError.message)
     }
   }
 
-  console.log(`Updated ${total} prices across ${shops.length} shops`)
+  console.log("Done!")
 }
 
-updatePrices().catch(console.error)
+main().catch((e) => {
+  console.error("Script failed:", e.message)
+  process.exit(1)
+})
