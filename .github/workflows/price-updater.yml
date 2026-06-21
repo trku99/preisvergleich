@@ -16,5 +16,5 @@ jobs:
       - run: npm ci
       - run: node scripts/price-updater.cjs
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: https://nlsmkveoqnjvdfngbjla.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sc21rdmVvcW5qdmRmbmdiamxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTMzOTksImV4cCI6MjA5NzYyOTM5OX0.fi9gemlqOgjCY9hvI8r0oW5-5iQcSQrTNUTfHUWLX3U
