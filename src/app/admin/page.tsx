@@ -2,140 +2,89 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase-client"
-import { useT } from "@/lib/i18n/LocaleProvider"
 
-type ProductShopRow = {
-  id: string
-  product_id: string
-  shop_id: string
-  product_url: string
-  product_slug: string
-  product_name: string
-  shop_name: string
+type Stats = {
+  total_products: number
+  total_shops: number
+  total_categories: number
+  total_product_shops: number
+  total_price_records: number
+  recent_products: { id: string; name: string; slug: string; created_at: string }[]
+  shop_stats: { name: string; count: number }[]
 }
 
-export default function AdminPage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [rows, setRows] = useState<ProductShopRow[]>([])
-  const [saving, setSaving] = useState<Record<string, boolean>>({})
-  const [message, setMessage] = useState("")
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null)
   const supabase = createClient()
-  const { t } = useT()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-      if (data.user) fetchRows()
-      else setLoading(false)
-    })
+    loadStats()
   }, [])
 
-  async function fetchRows() {
-    setLoading(true)
-    const { data } = await supabase
-      .from("product_shops")
-      .select(`id, product_id, shop_id, product_url, product:products!inner(slug, name), shop:shops!inner(name)`)
-      .order("product_id")
-
-    if (data) {
-      const mapped: ProductShopRow[] = data.map((r: any) => ({
-        id: r.id,
-        product_id: r.product_id,
-        shop_id: r.shop_id,
-        product_url: r.product_url || "",
-        product_slug: r.product?.slug || "",
-        product_name: r.product?.name || "",
-        shop_name: r.shop?.name || "",
-      }))
-      setRows(mapped.sort((a, b) => a.product_name.localeCompare(b.product_name)))
-    }
-    setLoading(false)
-  }
-
-  async function saveRow(id: string) {
-    setSaving((prev) => ({ ...prev, [id]: true }))
-    const row = rows.find((r) => r.id === id)
-    if (!row) return
-
-    const { error } = await supabase
-      .from("product_shops")
-      .update({ product_url: row.product_url })
-      .eq("id", id)
-
-    if (error) setMessage(`Fehler: ${error.message}`)
-    else setMessage("Gespeichert!")
-    setSaving((prev) => ({ ...prev, [id]: false }))
-    setTimeout(() => setMessage(""), 3000)
-  }
-
-  function updateUrl(id: string, url: string) {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, product_url: url } : r)))
-  }
-
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-20 text-center">
-        <h1 className="text-2xl font-bold mb-4">Admin</h1>
-        <p className="text-zinc-500 mb-6">Bitte anmelden, um URLs zu verwalten.</p>
-        <button
-          onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/auth/callback` } })}
-          className="rounded-lg bg-blue-600 px-6 py-2 text-white text-sm font-medium hover:bg-blue-700"
-        >
-          {t("nav.anmelden")}
-        </button>
-      </div>
-    )
+  async function loadStats() {
+    const { data } = await supabase.rpc("admin_dashboard_stats")
+    if (data) setStats(data as Stats)
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Admin – Produkt-URLs</h1>
-        {message && <span className="text-sm text-green-600">{message}</span>}
-      </div>
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-      {loading ? (
-        <p className="text-zinc-500">Lade...</p>
+      {!stats ? (
+        <p className="text-zinc-500">Yükleniyor...</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-zinc-500">
-                <th className="pb-2 pr-4">Produkt</th>
-                <th className="pb-2 pr-4">Shop</th>
-                <th className="pb-2 pr-4">URL</th>
-                <th className="pb-2 w-20"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b hover:bg-zinc-50">
-                  <td className="py-2 pr-4 text-zinc-900">{row.product_name}</td>
-                  <td className="py-2 pr-4 text-zinc-600">{row.shop_name}</td>
-                  <td className="py-2 pr-4">
-                    <input
-                      type="text"
-                      value={row.product_url}
-                      onChange={(e) => updateUrl(row.id, e.target.value)}
-                      className="w-full rounded border px-2 py-1 text-xs font-mono"
-                    />
-                  </td>
-                  <td className="py-2">
-                    <button
-                      onClick={() => saveRow(row.id)}
-                      disabled={saving[row.id]}
-                      className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {saving[row.id] ? "..." : "Save"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+            <StatCard label="Ürünler" value={stats.total_products} color="blue" />
+            <StatCard label="Mağazalar" value={stats.total_shops} color="green" />
+            <StatCard label="Kategoriler" value={stats.total_categories} color="purple" />
+            <StatCard label="Shop Bağlantıları" value={stats.total_product_shops} color="amber" />
+            <StatCard label="Fiyat Kaydı" value={stats.total_price_records} color="rose" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-5 border">
+              <h2 className="font-semibold mb-3">Mağaza Bazında Ürün Sayısı</h2>
+              <div className="space-y-2">
+                {stats.shop_stats.map((s) => (
+                  <div key={s.name} className="flex items-center justify-between text-sm">
+                    <span>{s.name}</span>
+                    <span className="font-medium">{s.count} ürün</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border">
+              <h2 className="font-semibold mb-3">Son Eklenen Ürünler</h2>
+              <div className="space-y-2">
+                {stats.recent_products.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between text-sm">
+                    <span>{p.name}</span>
+                    <span className="text-zinc-400 text-xs">{new Date(p.created_at).toLocaleDateString("de-CH")}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
       )}
+    </div>
+  )
+}
+
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  const colors: Record<string, string> = {
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+    green: "bg-green-50 text-green-700 border-green-200",
+    purple: "bg-purple-50 text-purple-700 border-purple-200",
+    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    rose: "bg-rose-50 text-rose-700 border-rose-200",
+  }
+  return (
+    <div className={`rounded-xl p-4 border ${colors[color] || colors.blue}`}>
+      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-xs mt-1 opacity-80">{label}</div>
     </div>
   )
 }
