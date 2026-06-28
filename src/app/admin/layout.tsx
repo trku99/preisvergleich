@@ -9,9 +9,18 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/products", label: "Ürünler", icon: "📦" },
   { href: "/admin/categories", label: "Kategoriler", icon: "📂" },
+  { href: "/admin/brands", label: "Markalar", icon: "🏷️" },
   { href: "/admin/shops", label: "Mağazalar", icon: "🏪" },
   { href: "/admin/prices", label: "Fiyatlar", icon: "💰" },
+  { href: "/admin/crawler", label: "Veri Çekme", icon: "🕷️" },
+  { href: "/admin/campaigns", label: "Kampanyalar", icon: "🏆" },
   { href: "/admin/users", label: "Kullanıcılar", icon: "👥" },
+  { href: "/admin/reports", label: "Raporlar", icon: "📈" },
+  { href: "/admin/seo", label: "SEO", icon: "🔍" },
+  { href: "/admin/cms", label: "İçerik", icon: "📝" },
+  { href: "/admin/logs", label: "Loglar", icon: "📋" },
+  { href: "/admin/integrations", label: "Entegrasyonlar", icon: "🔗" },
+  { href: "/admin/backups", label: "Yedekleme", icon: "💾" },
   { href: "/admin/settings", label: "Ayarlar", icon: "⚙️" },
 ]
 
