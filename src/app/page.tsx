@@ -20,7 +20,7 @@ async function getProducts() {
     slug: p.slug,
     brand: p.brand,
     description: p.description,
-    image: p.image_url || `https://placehold.co/400x400/e2e8f0/64748b?text=${encodeURIComponent(p.name.slice(0, 8))}`,
+    image: p.image_url || `https://placehold.co/400x400/3b82f6/ffffff?text=${encodeURIComponent((p.brand || p.name).slice(0, 2).toUpperCase())}`,
     category: p.category?.name || "",
     categorySlug: p.category?.slug || "",
     ean: p.ean || "",

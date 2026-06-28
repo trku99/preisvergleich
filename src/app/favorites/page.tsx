@@ -61,7 +61,7 @@ export default function FavoritesPage() {
               href={`/products/${p.slug}`}
               className="rounded-xl border bg-white p-4 hover:shadow-md transition-all"
             >
-              <img src={p.image_url || ""} alt={p.name} className="h-40 w-full object-contain mb-4" />
+              <img src={p.image_url || `https://placehold.co/400x400/3b82f6/ffffff?text=${encodeURIComponent((p.brand || p.name).slice(0, 2).toUpperCase())}`} alt={p.name} className="h-40 w-full object-contain mb-4" />
               <p className="text-xs text-blue-600 font-medium">{p.brand}</p>
               <p className="text-sm font-semibold text-zinc-900">{p.name}</p>
             </Link>

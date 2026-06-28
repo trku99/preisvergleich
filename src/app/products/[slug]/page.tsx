@@ -48,7 +48,7 @@ async function getProduct(slug: string) {
         slug: data.slug,
         brand: data.brand || "",
         description: data.description || "",
-        image: data.image_url || "",
+        image: data.image_url || `https://placehold.co/400x400/3b82f6/ffffff?text=${encodeURIComponent((data.brand || data.name).slice(0, 2).toUpperCase())}`,
         category: (data.category as any)?.name || "",
         categorySlug: (data.category as any)?.slug || "",
         ean: data.ean || "",
