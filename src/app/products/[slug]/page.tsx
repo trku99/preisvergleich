@@ -11,7 +11,7 @@ async function getProduct(slug: string) {
   try {
     const { data } = await supabase
       .from("products")
-      .select(`id, name, slug, brand, description, image_url, ean, category:categories(name, slug)`)
+      .select(`id, name, slug, brand, description, image_url, ean, variant_of, category:categories(name, slug)`)
       .eq("slug", slug)
       .single()
 
@@ -48,6 +48,19 @@ async function getProduct(slug: string) {
         return { date, price: Math.round((dayPrices.reduce((s: number, h: any) => s + h.price, 0) / dayPrices.length) * 100) / 100 }
       })
 
+      let variants: { name: string; slug: string }[] = []
+      if (data.variant_of) {
+        const { data: parent } = await supabase.from("products").select("id").eq("id", data.variant_of).single()
+        if (parent) {
+          const { data: siblings } = await supabase.from("products").select("name, slug").eq("variant_of", data.variant_of).order("name")
+          const { data: parentName } = await supabase.from("products").select("name, slug").eq("id", data.variant_of).single()
+          variants = [parentName!, ...(siblings || [])]
+        }
+      } else {
+        const { data: children } = await supabase.from("products").select("name, slug").eq("variant_of", data.id).order("name")
+        if (children) variants = [{ name: data.name, slug: data.slug }, ...children]
+      }
+
       return {
         id: data.id, name: data.name, slug: data.slug, brand: data.brand || "",
         description: data.description || "",
@@ -56,7 +69,8 @@ async function getProduct(slug: string) {
         ean: data.ean || "", currency: "CHF" as const,
         lowestPrice: prices[0]?.price || 0, highestPrice: prices[prices.length - 1]?.price || 0,
         shopCount: prices.length, prices, priceHistory: avgHistory,
-      } as Product
+        variants,
+      } as any
     }
   } catch {}
   return null
@@ -89,6 +103,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="text-sm font-semibold text-indigo-500 uppercase tracking-wider mb-2">{product.brand}</p>
             <h1 className="text-2xl lg:text-3xl font-bold text-zinc-900 leading-tight">{product.name}</h1>
             <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{product.description}</p>
+
+            {/* Variants */}
+            {(product as any).variants?.length > 1 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {(product as any).variants.map((v: any) => (
+                  <Link
+                    key={v.slug}
+                    href={`/products/${v.slug}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      v.slug === slug
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    }`}
+                  >
+                    {v.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Price */}
@@ -111,7 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div>
             <h2 className="font-semibold text-zinc-900 mb-3">Preise vergleichen</h2>
             <div className="space-y-2">
-              {product.prices.map((price) => {
+              {product.prices.map((price: any) => {
                 const shop = getShopById(price.shopId)
                 return (
                   <a
@@ -159,8 +192,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="rounded-2xl border border-zinc-200/60 bg-white/70 p-5">
               <h3 className="font-semibold text-zinc-900 text-sm mb-4">Preisverlauf</h3>
               <div className="h-40 flex items-end gap-1">
-                {product.priceHistory.map((h, i) => {
-                  const maxPrice = Math.max(...product.priceHistory.map((ph) => ph.price))
+                {product.priceHistory.map((h: any, i: number) => {
+                  const maxPrice = Math.max(...product.priceHistory.map((ph: any) => ph.price))
                   const height = maxPrice > 0 ? (h.price / maxPrice) * 100 : 0
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">

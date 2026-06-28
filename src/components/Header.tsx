@@ -2,6 +2,7 @@ import Link from "next/link"
 import { SearchBar } from "./SearchBar"
 import { AuthButton } from "./AuthButton"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { NotificationBell } from "./NotificationBell"
 
 export function Header() {
   return (
@@ -17,13 +18,17 @@ export function Header() {
         <div className="flex-1 max-w-xl mx-auto">
           <SearchBar />
         </div>
-        <nav className="flex items-center gap-3 shrink-0">
+        <nav className="flex items-center gap-1 shrink-0">
           <LanguageSwitcher />
+          <NotificationBell />
           <Link href="/products" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
             Produkte
           </Link>
           <Link href="/favorites" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
             Favoriten
+          </Link>
+          <Link href="/categories" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
+            Kategorien
           </Link>
           <Link href="/admin" className="hidden lg:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
             Admin

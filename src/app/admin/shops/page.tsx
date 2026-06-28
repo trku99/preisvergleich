@@ -37,7 +37,7 @@ export default function AdminShops() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Silinsin mi?")) return
+    if (!confirm("Wirklich löschen?")) return
     const { error } = await supabase.rpc("admin_delete_shop", { p_id: id })
     if (error) alert(error.message)
     else fetch()
@@ -52,62 +52,62 @@ export default function AdminShops() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Mağazalar</h1>
+      <h1 className="text-2xl font-bold text-zinc-800 mb-6">Geschäfte</h1>
 
-      <div className="bg-white rounded-xl border p-4 mb-6 max-w-md">
-        <h2 className="font-medium mb-3">{editing ? "Mağaza Düzenle" : "Yeni Mağaza"}</h2>
+      <div className="bg-white rounded-2xl border border-zinc-200 p-5 mb-6 max-w-md shadow-sm">
+        <h2 className="font-medium text-zinc-800 mb-3 text-sm">{editing ? "Geschäft bearbeiten" : "Neues Geschäft"}</h2>
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-medium block mb-1">Mağaza Adı</label>
-            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })} className="w-full rounded-lg border px-3 py-2 text-sm" />
+            <label className="text-xs font-medium text-zinc-600 block mb-1">Name</label>
+            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })} className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300" />
           </div>
           <div>
-            <label className="text-xs font-medium block mb-1">Slug</label>
-            <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm font-mono" />
+            <label className="text-xs font-medium text-zinc-600 block mb-1">Slug</label>
+            <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-800 font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300" />
           </div>
           <div>
-            <label className="text-xs font-medium block mb-1">Base URL</label>
-            <input type="text" value={form.base_url} onChange={(e) => setForm({ ...form, base_url: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm" placeholder="https://www.example.ch" />
+            <label className="text-xs font-medium text-zinc-600 block mb-1">Basis-URL</label>
+            <input type="text" value={form.base_url} onChange={(e) => setForm({ ...form, base_url: e.target.value })} className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300" placeholder="https://www.example.ch" />
           </div>
           <div>
-            <label className="text-xs font-medium block mb-1">Logo URL</label>
-            <input type="text" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} className="w-full rounded-lg border px-3 py-2 text-sm" />
+            <label className="text-xs font-medium text-zinc-600 block mb-1">Logo-URL</label>
+            <input type="text" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300" />
           </div>
           {editing && (
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-              Aktif
+            <label className="flex items-center gap-2 text-sm text-zinc-500">
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="accent-indigo-600" />
+              Aktiv
             </label>
           )}
           <div className="flex gap-2 pt-2">
-            <button onClick={save} disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-700 disabled:opacity-50">
-              {saving ? "..." : editing ? "Güncelle" : "Ekle"}
+            <button onClick={save} disabled={saving} className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-xs text-white hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-lg shadow-indigo-600/20">
+              {saving ? "..." : editing ? "Aktualisieren" : "Hinzufügen"}
             </button>
-            {editing && <button onClick={reset} className="rounded-lg border px-4 py-2 text-xs text-zinc-600">İptal</button>}
+            {editing && <button onClick={reset} className="rounded-lg border border-zinc-300 px-4 py-2 text-xs text-zinc-500 hover:text-zinc-700">Abbrechen</button>}
           </div>
         </div>
       </div>
 
-      {loading ? <p className="text-zinc-500">Yükleniyor...</p> : (
-        <div className="bg-white rounded-xl border overflow-hidden max-w-xl">
+      {loading ? <p className="text-zinc-400">Wird geladen...</p> : (
+        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden max-w-xl shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 border-b">
-              <tr className="text-left text-zinc-500">
-                <th className="px-4 py-3 font-medium">Mağaza</th>
+            <thead className="bg-zinc-50 border-b border-zinc-200">
+              <tr className="text-left text-zinc-400">
+                <th className="px-4 py-3 font-medium">Geschäft</th>
                 <th className="px-4 py-3 font-medium">Slug</th>
-                <th className="px-4 py-3 font-medium">Durum</th>
+                <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium w-24"></th>
               </tr>
             </thead>
             <tbody>
               {shops.map((s) => (
-                <tr key={s.id} className="border-b hover:bg-zinc-50">
-                  <td className="px-4 py-3 font-medium">{s.name}</td>
+                <tr key={s.id} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-zinc-800">{s.name}</td>
                   <td className="px-4 py-3 text-zinc-400 font-mono text-xs">{s.slug}</td>
-                  <td className="px-4 py-3">{s.is_active ? <span className="text-green-600 text-xs">Aktif</span> : <span className="text-red-400 text-xs">Pasif</span>}</td>
+                  <td className="px-4 py-3">{s.is_active ? <span className="text-emerald-600 text-xs">Aktiv</span> : <span className="text-red-500/60 text-xs">Inaktiv</span>}</td>
                   <td className="px-4 py-3 space-x-2">
-                    <button onClick={() => edit(s)} className="text-blue-600 text-xs">Düzenle</button>
-                    <button onClick={() => remove(s.id)} className="text-red-500 text-xs">Sil</button>
+                    <button onClick={() => edit(s)} className="text-indigo-600 hover:text-zinc-700 text-xs">Bearbeiten</button>
+                    <button onClick={() => remove(s.id)} className="text-red-500 hover:text-red-400 text-xs">Löschen</button>
                   </td>
                 </tr>
               ))}

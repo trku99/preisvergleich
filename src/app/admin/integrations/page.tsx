@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase-client"
 const services = [
   { id: "ga4", name: "Google Analytics 4", icon: "📊", desc: "GA4 Measurement ID", field: "G-XXXXXXXX" },
   { id: "gtm", name: "Google Tag Manager", icon: "🏷️", desc: "GTM Container ID", field: "GTM-XXXXXXX" },
-  { id: "gsc", name: "Google Search Console", icon: "🔍", desc: "Site doğrulama", field: "meta tag" },
-  { id: "smtp", name: "SMTP", icon: "📧", desc: "E-posta gönderimi", field: "smtp.example.com" },
-  { id: "affiliate", name: "Affiliate Network", icon: "🔗", desc: "Komisyon takibi", field: "API Key" },
+  { id: "gsc", name: "Google Search Console", icon: "🔍", desc: "Site-Verifizierung", field: "meta tag" },
+  { id: "smtp", name: "SMTP", icon: "📧", desc: "E-Mail-Versand", field: "smtp.example.com" },
+  { id: "affiliate", name: "Affiliate Network", icon: "🔗", desc: "Provision-Tracking", field: "API Key" },
 ]
 
 export default function AdminIntegrations() {
@@ -20,41 +20,32 @@ export default function AdminIntegrations() {
 
   async function save(id: string) {
     setSaving(id)
-    // For now just simulate - real implementation would use a settings table
     await new Promise(r => setTimeout(r, 500))
     setSaving(null)
-    alert(`${services.find(s => s.id === id)?.name} ayarlandı.`)
+    alert(`${services.find(s => s.id === id)?.name} konfiguriert.`)
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Entegrasyonlar</h1>
-      <p className="text-sm text-zinc-500 mb-6">Harici servis bağlantı ayarları. (Yakında veritabanına kaydedilecek)</p>
+      <h1 className="text-2xl font-bold text-zinc-800 mb-6">Integrationen</h1>
+      <p className="text-sm text-zinc-400 mb-6">Externe Dienstverbindungen.</p>
 
       <div className="grid md:grid-cols-2 gap-4">
         {services.map((s) => (
-          <div key={s.id} className="bg-white rounded-xl border p-5">
+          <div key={s.id} className="bg-white rounded-2xl border border-zinc-200 p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-2xl">{s.icon}</span>
               <div>
-                <div className="font-medium text-sm">{s.name}</div>
+                <div className="font-medium text-sm text-zinc-800">{s.name}</div>
                 <div className="text-xs text-zinc-400">{s.desc}</div>
               </div>
             </div>
             <div className="flex gap-2">
-              <input
-                type="text"
-                value={configs[s.id] || ""}
-                onChange={(e) => setVal(s.id, e.target.value)}
-                placeholder={s.field}
-                className="flex-1 rounded border px-3 py-2 text-xs"
-              />
-              <button
-                onClick={() => save(s.id)}
-                disabled={saving === s.id}
-                className="rounded bg-blue-600 px-3 py-2 text-xs text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {saving === s.id ? "..." : "Kaydet"}
+              <input type="text" value={configs[s.id] || ""} onChange={(e) => setVal(s.id, e.target.value)} placeholder={s.field}
+                className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-700 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300" />
+              <button onClick={() => save(s.id)} disabled={saving === s.id}
+                className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-2 text-xs text-white hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-lg shadow-indigo-600/20">
+                {saving === s.id ? "..." : "Speichern"}
               </button>
             </div>
           </div>

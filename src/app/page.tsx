@@ -76,7 +76,7 @@ export default async function Home() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
             <Link
-              href="/products?category=smartphones"
+              href="/category/smartphones"
               className="inline-flex items-center px-6 py-3 rounded-xl border border-zinc-200 text-zinc-600 text-sm font-medium hover:bg-zinc-50 transition-all"
             >
               Smartphones
@@ -89,15 +89,15 @@ export default async function Home() {
       <section className="pb-16">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-lg font-semibold text-zinc-900">Kategorien</h2>
-          <Link href="/products" className="text-sm text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
-            Alle anzeigen →
+          <Link href="/categories" className="text-sm text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
+            Alle Kategorien →
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {categories.map((cat, i) => (
             <Link
               key={cat.slug}
-              href={`/products?category=${cat.slug}`}
+              href={`/category/${cat.slug}`}
               className="group relative flex flex-col items-center gap-3 rounded-2xl border border-zinc-200/60 bg-white/70 p-5 card-hover hover:glow-sm hover:border-indigo-200/50"
               style={{ animation: `fade-in-up 0.5s ease-out ${i * 0.05}s both` }}
             >

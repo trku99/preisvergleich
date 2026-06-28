@@ -8,9 +8,6 @@ export default function AdminBrands() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.rpc("admin_dashboard_stats").then(({ data }) => {
-      // get brands from products table
-    })
     supabase.from("products").select("brand").then(({ data }) => {
       if (!data) return
       const map = new Map<string, number>()
@@ -23,20 +20,20 @@ export default function AdminBrands() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Markalar</h1>
-      <div className="bg-white rounded-xl border overflow-hidden max-w-lg">
+      <h1 className="text-2xl font-bold text-zinc-800 mb-6">Marken</h1>
+      <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden max-w-lg shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 border-b">
-            <tr className="text-left text-zinc-500">
-              <th className="px-4 py-3 font-medium">Marka</th>
-              <th className="px-4 py-3 font-medium">Ürün Sayısı</th>
+          <thead className="bg-zinc-50 border-b border-zinc-200">
+            <tr className="text-left text-zinc-400">
+              <th className="px-4 py-3 font-medium">Marke</th>
+              <th className="px-4 py-3 font-medium">Produkte</th>
             </tr>
           </thead>
           <tbody>
             {brands.map((b) => (
-              <tr key={b.brand} className="border-b hover:bg-zinc-50">
-                <td className="px-4 py-3 font-medium">{b.brand}</td>
-                <td className="px-4 py-3">{b.count} ürün</td>
+              <tr key={b.brand} className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                <td className="px-4 py-3 font-medium text-zinc-800">{b.brand}</td>
+                <td className="px-4 py-3 text-zinc-500">{b.count} Produkte</td>
               </tr>
             ))}
           </tbody>
