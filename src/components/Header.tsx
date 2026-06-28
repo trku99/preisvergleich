@@ -19,6 +19,7 @@ export function Header() {
           <LanguageSwitcher />
           <Link href="/products" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Produkte</Link>
           <Link href="/favorites" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Favoriten</Link>
+          <Link href="/admin" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Admin</Link>
           <AuthButton />
         </nav>
       </div>
