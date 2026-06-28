@@ -5,21 +5,29 @@ import { LanguageSwitcher } from "./LanguageSwitcher"
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 w-full glass-dark border-b border-zinc-200/50">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-bold">P</span>
-          <span className="hidden sm:inline">PreisVergleich</span>
-          <span className="text-sm text-blue-600 font-medium">.ch</span>
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold glow-sm group-hover:glow-md transition-all duration-300">
+            P
+          </span>
+          <span className="hidden sm:inline text-lg font-semibold tracking-tight">PreisVergleich</span>
+          <span className="text-sm font-medium gradient-text">.ch</span>
         </Link>
         <div className="flex-1 max-w-xl mx-auto">
           <SearchBar />
         </div>
-        <nav className="flex items-center gap-4 shrink-0">
+        <nav className="flex items-center gap-3 shrink-0">
           <LanguageSwitcher />
-          <Link href="/products" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Produkte</Link>
-          <Link href="/favorites" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Favoriten</Link>
-          <Link href="/admin" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors">Admin</Link>
+          <Link href="/products" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
+            Produkte
+          </Link>
+          <Link href="/favorites" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
+            Favoriten
+          </Link>
+          <Link href="/admin" className="hidden lg:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
+            Admin
+          </Link>
           <AuthButton />
         </nav>
       </div>
