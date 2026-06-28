@@ -3,6 +3,8 @@ import { products as mockProducts, searchProducts, getProductsByCategory, catego
 import { ProductCard } from "@/components/ProductCard"
 import type { Product } from "@/lib/types"
 
+export const dynamic = "force-dynamic"
+
 export default async function ProductsPage({
   searchParams,
 }: {

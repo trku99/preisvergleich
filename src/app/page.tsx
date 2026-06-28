@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import type { Product } from "@/lib/types"
 import { products as mockProducts, categories as mockCats } from "@/lib/data"
 
+export const dynamic = "force-dynamic"
+
 async function getProducts() {
   const { data: products } = await supabase.from("products").select(`
     id, name, slug, brand, description, image_url, ean,
