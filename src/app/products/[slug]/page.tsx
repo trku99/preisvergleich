@@ -65,9 +65,9 @@ async function getProduct(slug: string) {
       const galaxusPrice = data.galaxus_price ? {
         price: Number(data.galaxus_price),
         currency: data.galaxus_currency || "CHF",
-        inStock: data.galaxus_in_stock,
+        inStock: data.galaxus_in_stock ?? true,
         shopId: "galaxus",
-        url: data.galaxus_id ? `https://www.galaxus.ch/product/${data.galaxus_id}` : "#",
+        url: data.galaxus_id?.startsWith("http") ? data.galaxus_id : "#",
         isPromotion: false,
         updatedAt: data.galaxus_updated_at?.split("T")[0] || "",
         isReal: true,
@@ -177,7 +177,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       <div>
                         <p className="text-sm font-medium text-zinc-900">
                           {shop?.name || price.shopId}
-                          {price.isReal && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-semibold">REAL</span>}
+                          {price.isReal && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-semibold">TOPPREISE</span>}
                         </p>
                         <p className="text-xs text-zinc-400">
                           {price.inStock ? t("product.instock") : t("product.outofstock")} · {price.updatedAt}
