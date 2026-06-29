@@ -103,7 +103,7 @@ export default async function Home() {
             >
               <span className="text-3xl transition-transform duration-300 group-hover:scale-110">{cat.icon}</span>
               <div className="text-center">
-                <span className="text-sm font-medium text-zinc-700">{cat.name}</span>
+                  <span className="text-sm font-medium text-zinc-700">{t(`cat.${cat.slug}`)}</span>
                 <p className="text-xs text-zinc-400 mt-0.5">{t("categories.product_count", { n: cat.productCount })}</p>
               </div>
             </Link>

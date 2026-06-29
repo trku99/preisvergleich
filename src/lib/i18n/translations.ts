@@ -19,6 +19,12 @@ export const translations = {
     "home.featured_products": "Aktuelle Produkte",
     "home.all_products": "Alle Produkte →",
     "home.smartphones": "Smartphones",
+    "cat.smartphones": "Smartphones",
+    "cat.laptops": "Laptops",
+    "cat.tablets": "Tablets",
+    "cat.headphones": "Kopfhörer",
+    "cat.smartwatches": "Smartwatches",
+    "cat.cameras": "Kameras",
     "home.features": "Warum PreisVergleich.ch?",
     "home.features.free": "Kostenlos",
     "home.features.free.desc": "Keine versteckten Gebühren",
@@ -98,6 +104,12 @@ export const translations = {
     "home.featured_products": "Produits récents",
     "home.all_products": "Tous les produits →",
     "home.smartphones": "Smartphones",
+    "cat.smartphones": "Smartphones",
+    "cat.laptops": "Ordinateurs portables",
+    "cat.tablets": "Tablettes",
+    "cat.headphones": "Casques",
+    "cat.smartwatches": "Montres connectées",
+    "cat.cameras": "Appareils photo",
     "home.features": "Pourquoi PreisVergleich.ch?",
     "home.features.free": "Gratuit",
     "home.features.free.desc": "Pas de frais cachés",
@@ -177,6 +189,12 @@ export const translations = {
     "home.featured_products": "Prodotti recenti",
     "home.all_products": "Tutti i prodotti →",
     "home.smartphones": "Smartphone",
+    "cat.smartphones": "Smartphone",
+    "cat.laptops": "Computer portatili",
+    "cat.tablets": "Tablet",
+    "cat.headphones": "Cuffie",
+    "cat.smartwatches": "Smartwatch",
+    "cat.cameras": "Fotocamere",
     "home.features": "Perché PreisVergleich.ch?",
     "home.features.free": "Gratuito",
     "home.features.free.desc": "Nessuna tassa nascosta",
@@ -239,4 +257,4 @@ export const translations = {
 }
 
 export type Locale = keyof typeof translations
-export type TranslationKey = keyof typeof translations.de
+export type TranslationKey = string

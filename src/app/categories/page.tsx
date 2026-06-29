@@ -39,7 +39,7 @@ export default async function CategoriesPage() {
             <div className="flex items-center gap-4">
               <span className="text-4xl transition-transform duration-300 group-hover:scale-110">{cat.icon}</span>
               <div>
-                <h2 className="text-lg font-semibold text-zinc-900 group-hover:text-indigo-600 transition-colors">{cat.name}</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 group-hover:text-indigo-600 transition-colors">{t(`cat.${cat.slug}`)}</h2>
                 <p className="text-sm text-zinc-400">{t("categories.product_count", { n: cat.count })}</p>
               </div>
             </div>

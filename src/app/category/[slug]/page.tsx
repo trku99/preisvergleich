@@ -71,7 +71,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <div className="flex items-center gap-3">
           {category?.icon && <span className="text-3xl">{category.icon}</span>}
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">{category?.name || slug}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">{t(`cat.${slug}`)}</h1>
             <p className="text-sm text-zinc-400 mt-1">{t("categories.product_count", { n: products.length })}</p>
           </div>
         </div>
@@ -88,7 +88,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                 : "bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
             }`}
           >
-            {cat.icon} {cat.name}
+            {cat.icon} {t(`cat.${cat.slug}`)}
           </Link>
         ))}
       </div>

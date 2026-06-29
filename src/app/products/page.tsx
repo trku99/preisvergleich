@@ -76,7 +76,7 @@ export default async function ProductsPage({
       <div className="mb-8">
         {query && <p className="text-sm text-zinc-400 mb-1">{t("products.search_results")}</p>}
         <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">
-          {query ? `"${query}"` : activeCategory ? activeCategory.name : t("products.title")}
+          {query ? `"${query}"` : activeCategory ? t(`cat.${activeCategory.slug}`) : t("products.title")}
         </h1>
         <p className="text-sm text-zinc-400 mt-1">{t("products.found_count", { n: products.length })}</p>
       </div>
