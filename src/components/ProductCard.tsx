@@ -1,13 +1,14 @@
 import Link from "next/link"
 import type { Product } from "@/lib/types"
 import { getShopById } from "@/lib/data"
-import { Badge } from "@/components/ui/badge"
+import { getT } from "@/lib/i18n/server"
 
 interface ProductCardProps {
   product: Product
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export async function ProductCard({ product }: ProductCardProps) {
+  const { t } = await getT()
   const bestPrice = product.prices?.[0]
   const cheapestShop = bestPrice ? getShopById(bestPrice.shopId) : null
 
@@ -44,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
               )}
             </>
           ) : (
-            <span className="text-sm text-zinc-300">Preise laden...</span>
+            <span className="text-sm text-zinc-300">{t("products.loading")}</span>
           )}
         </div>
         {cheapestShop && (

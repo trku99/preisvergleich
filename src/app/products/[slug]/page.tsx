@@ -6,6 +6,7 @@ import { FavoriteButton } from "@/components/FavoriteButton"
 import { PriceAlertForm } from "@/components/PriceAlertForm"
 import Link from "next/link"
 import type { Product } from "@/lib/types"
+import { getT } from "@/lib/i18n/server"
 
 async function getProduct(slug: string) {
   try {
@@ -77,6 +78,7 @@ async function getProduct(slug: string) {
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { t } = await getT()
   const { slug } = await params
   let product = await getProduct(slug)
   if (!product) product = mockProducts.find((p) => p.slug === slug) || null
@@ -86,7 +88,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <Link href="/products" className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-600 transition-colors mb-6">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-        Zurück
+        {t("product.back")}
       </Link>
 
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
@@ -127,7 +129,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           {/* Price */}
           {product.prices.length > 0 && (
             <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white glow-md">
-              <p className="text-sm text-white/70 mb-1">Tiefster Preis</p>
+              <p className="text-sm text-white/70 mb-1">{t("product.best_price")}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">CHF {product.lowestPrice}</span>
                 {product.highestPrice > product.lowestPrice && (
@@ -142,7 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           {/* Shop List */}
           <div>
-            <h2 className="font-semibold text-zinc-900 mb-3">Preise vergleichen</h2>
+            <h2 className="font-semibold text-zinc-900 mb-3">{t("product.compare_prices")}</h2>
             <div className="space-y-2">
               {product.prices.map((price: any) => {
                 const shop = getShopById(price.shopId)
@@ -161,7 +163,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       <div>
                         <p className="text-sm font-medium text-zinc-900">{shop?.name || price.shopId}</p>
                         <p className="text-xs text-zinc-400">
-                          {price.inStock ? "Lagernd" : "Nicht lagernd"} · {price.updatedAt}
+                          {price.inStock ? t("product.instock") : t("product.outofstock")} · {price.updatedAt}
                         </p>
                       </div>
                     </div>
@@ -190,7 +192,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           {/* Price History Chart */}
           {product.priceHistory.length > 1 && (
             <div className="rounded-2xl border border-zinc-200/60 bg-white/70 p-5">
-              <h3 className="font-semibold text-zinc-900 text-sm mb-4">Preisverlauf</h3>
+              <h3 className="font-semibold text-zinc-900 text-sm mb-4">{t("product.price_history")}</h3>
               <div className="h-40 flex items-end gap-1">
                 {product.priceHistory.map((h: any, i: number) => {
                   const maxPrice = Math.max(...product.priceHistory.map((ph: any) => ph.price))

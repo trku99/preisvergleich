@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase"
 import { ProductCard } from "@/components/ProductCard"
 import type { Product } from "@/lib/types"
 import { products as mockProducts, categories as mockCats } from "@/lib/data"
+import { getT } from "@/lib/i18n/server"
 
 export const dynamic = "force-dynamic"
 
@@ -24,6 +25,7 @@ async function getProducts() {
 }
 
 export default async function Home() {
+  const { t } = await getT()
   const products = await getProducts()
   const categories = mockCats
 
@@ -57,29 +59,27 @@ export default async function Home() {
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/80 border border-indigo-200/50 text-indigo-600 text-xs font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            Schweizer Preisvergleich
+            {t("home.badge")}
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-zinc-900 leading-[1.1]">
-            Finde den besten Preis
-            <br />
-            <span className="gradient-text">in der Schweiz</span>
+            {t("hero.title")}
           </h1>
           <p className="mt-5 text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            Vergleiche Preise von über 6 Schweizer Online-Shops auf einen Blick.
+            {t("hero.subtitle")}
           </p>
           <div className="mt-8 flex items-center justify-center gap-4">
             <Link
               href="/products"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-medium glow-sm hover:glow-md transition-all duration-300 card-hover"
             >
-              Produkte vergleichen
+              {t("hero.cta")}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
             <Link
               href="/category/smartphones"
               className="inline-flex items-center px-6 py-3 rounded-xl border border-zinc-200 text-zinc-600 text-sm font-medium hover:bg-zinc-50 transition-all"
             >
-              Smartphones
+              {t("home.smartphones")}
             </Link>
           </div>
         </div>
@@ -88,9 +88,9 @@ export default async function Home() {
       {/* Categories */}
       <section className="pb-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-lg font-semibold text-zinc-900">Kategorien</h2>
+          <h2 className="text-lg font-semibold text-zinc-900">{t("home.categories")}</h2>
           <Link href="/categories" className="text-sm text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
-            Alle Kategorien →
+            {t("home.categories_all")}
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -104,7 +104,7 @@ export default async function Home() {
               <span className="text-3xl transition-transform duration-300 group-hover:scale-110">{cat.icon}</span>
               <div className="text-center">
                 <span className="text-sm font-medium text-zinc-700">{cat.name}</span>
-                <p className="text-xs text-zinc-400 mt-0.5">{cat.productCount} Produkte</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{t("categories.product_count", { n: cat.productCount })}</p>
               </div>
             </Link>
           ))}
@@ -114,9 +114,9 @@ export default async function Home() {
       {/* Featured Products */}
       <section className="pb-20">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-lg font-semibold text-zinc-900">Aktuelle Produkte</h2>
+          <h2 className="text-lg font-semibold text-zinc-900">{t("home.featured_products")}</h2>
           <Link href="/products" className="text-sm text-indigo-500 hover:text-indigo-600 font-medium transition-colors">
-            Alle Produkte →
+            {t("home.all_products")}
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -132,9 +132,9 @@ export default async function Home() {
       <section className="pb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: "🇨🇭", title: "Schweizer Shops", desc: "Alle Preise von lokalen Händlern" },
-            { icon: "⚡", title: "Täglich aktualisiert", desc: "Frische Preise alle 6 Stunden" },
-            { icon: "🔒", title: "Kostenlos", desc: "Keine versteckten Gebühren" },
+            { icon: "🇨🇭", title: t("home.features.all"), desc: t("home.features.all.desc") },
+            { icon: "⚡", title: t("home.features.fresh_title"), desc: t("home.features.fresh_desc") },
+            { icon: "🔒", title: t("home.features.free"), desc: t("home.features.free.desc") },
           ].map((f, i) => (
             <div key={f.title} className="group rounded-2xl border border-zinc-200/60 bg-white/70 p-6 card-hover" style={{ animation: `fade-in-up 0.5s ease-out ${i * 0.1}s both` }}>
               <div className="flex items-center gap-4">

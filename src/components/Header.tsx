@@ -3,8 +3,10 @@ import { SearchBar } from "./SearchBar"
 import { AuthButton } from "./AuthButton"
 import { LanguageSwitcher } from "./LanguageSwitcher"
 import { NotificationBell } from "./NotificationBell"
+import { getT } from "@/lib/i18n/server"
 
-export function Header() {
+export async function Header() {
+  const { t } = await getT()
   return (
     <header className="sticky top-0 z-50 w-full glass-dark border-b border-zinc-200/50">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
@@ -22,16 +24,16 @@ export function Header() {
           <LanguageSwitcher />
           <NotificationBell />
           <Link href="/products" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
-            Produkte
+            {t("nav.produkte")}
           </Link>
           <Link href="/favorites" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
-            Favoriten
+            {t("nav.favoriten")}
           </Link>
           <Link href="/categories" className="hidden md:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
-            Kategorien
+            {t("nav.kategorien")}
           </Link>
           <Link href="/admin" className="hidden lg:inline text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100">
-            Admin
+            {t("nav.admin")}
           </Link>
           <AuthButton />
         </nav>

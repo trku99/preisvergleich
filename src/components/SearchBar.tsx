@@ -102,7 +102,7 @@ export function SearchBar() {
             onClick={() => setOpen(false)}
             className="block px-4 py-2.5 text-center text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors border-t border-zinc-100"
           >
-            Tüm sonuçları gör ({results.length}+)
+            {t("search.all_results", { n: results.length })}
           </Link>
         </div>
       )}

@@ -1,10 +1,12 @@
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { categories as mockCategories } from "@/lib/data"
+import { getT } from "@/lib/i18n/server"
 
 export const dynamic = "force-dynamic"
 
 export default async function CategoriesPage() {
+  const { t } = await getT()
   let dbCategories: { name: string; slug: string; icon: string; count: number }[] = []
 
   try {
@@ -22,8 +24,8 @@ export default async function CategoriesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">Kategorien</h1>
-        <p className="text-sm text-zinc-400 mt-1">{displayCats.length} Kategorien</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">{t("categories.title")}</h1>
+        <p className="text-sm text-zinc-400 mt-1">{t("categories.count", { n: displayCats.length })}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -38,7 +40,7 @@ export default async function CategoriesPage() {
               <span className="text-4xl transition-transform duration-300 group-hover:scale-110">{cat.icon}</span>
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900 group-hover:text-indigo-600 transition-colors">{cat.name}</h2>
-                <p className="text-sm text-zinc-400">{cat.count} Produkte</p>
+                <p className="text-sm text-zinc-400">{t("categories.product_count", { n: cat.count })}</p>
               </div>
             </div>
           </Link>

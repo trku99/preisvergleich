@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase"
 import { products as mockProducts, searchProducts, getProductsByCategory, categories } from "@/lib/data"
 import { ProductCard } from "@/components/ProductCard"
 import type { Product } from "@/lib/types"
+import { getT } from "@/lib/i18n/server"
 
 export const dynamic = "force-dynamic"
 
@@ -10,6 +11,7 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ q?: string; category?: string }>
 }) {
+  const { t } = await getT()
   const { q, category } = await searchParams
   const query = q || ""
   const cat = category || ""
@@ -72,17 +74,17 @@ export default async function ProductsPage({
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        {query && <p className="text-sm text-zinc-400 mb-1">Suchergebnisse für</p>}
+        {query && <p className="text-sm text-zinc-400 mb-1">{t("products.search_results")}</p>}
         <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">
-          {query ? `"${query}"` : activeCategory ? activeCategory.name : "Alle Produkte"}
+          {query ? `"${query}"` : activeCategory ? activeCategory.name : t("products.title")}
         </h1>
-        <p className="text-sm text-zinc-400 mt-1">{products.length} Produkte gefunden</p>
+        <p className="text-sm text-zinc-400 mt-1">{t("products.found_count", { n: products.length })}</p>
       </div>
 
       {products.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-4xl mb-4">🔍</div>
-          <p className="text-zinc-400">Keine Produkte gefunden.</p>
+          <p className="text-zinc-400">{t("products.noresults")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

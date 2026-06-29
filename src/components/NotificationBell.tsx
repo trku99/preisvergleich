@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase-client"
 import Link from "next/link"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export function NotificationBell() {
+  const { t, locale } = useT()
   const [user, setUser] = useState<any>(null)
   const [count, setCount] = useState(0)
   const [open, setOpen] = useState(false)
@@ -48,11 +50,11 @@ export function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl border border-zinc-200 shadow-xl z-50 overflow-hidden">
             <div className="p-3 border-b border-zinc-100 flex items-center justify-between">
-              <span className="text-sm font-medium text-zinc-700">Benachrichtigungen</span>
-              <Link href="/notifications" className="text-xs text-indigo-600 hover:text-indigo-500" onClick={() => setOpen(false)}>Alle anzeigen</Link>
+              <span className="text-sm font-medium text-zinc-700">{t("notification_bell.title")}</span>
+              <Link href="/notifications" className="text-xs text-indigo-600 hover:text-indigo-500" onClick={() => setOpen(false)}>{t("notification_bell.view_all")}</Link>
             </div>
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-sm text-zinc-400">Keine neuen Benachrichtigungen</div>
+              <div className="p-6 text-center text-sm text-zinc-400">{t("notification_bell.empty")}</div>
             ) : (
               <div className="max-h-64 overflow-y-auto">
                 {notifications.map((n) => (
@@ -64,7 +66,7 @@ export function NotificationBell() {
                       </div>
                       <button onClick={() => markRead(n.id)} className="text-xs text-indigo-500 hover:text-indigo-400 shrink-0 mt-0.5">✓</button>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-1">{new Date(n.created_at).toLocaleDateString("de-CH")}</p>
+                    <p className="text-xs text-zinc-400 mt-1">{new Date(n.created_at).toLocaleDateString(locale === "de" ? "de-CH" : locale)}</p>
                   </div>
                 ))}
               </div>

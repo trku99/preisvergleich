@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase-client"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export function FavoriteButton({ productId }: { productId: string }) {
+  const { t } = useT()
   const [isFavorite, setIsFavorite] = useState(false)
   const [user, setUser] = useState<any>(null)
   const supabase = createClient()
@@ -53,7 +55,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
       <svg className="h-4 w-4" fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
         <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
       </svg>
-      {isFavorite ? "Gespeichert" : "Merken"}
+      {isFavorite ? t("product.favorite.saved") : t("product.favorite.save")}
     </button>
   )
 }

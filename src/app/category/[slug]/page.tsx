@@ -3,6 +3,7 @@ import { products as mockProducts, getProductsByCategory, categories } from "@/l
 import { ProductCard } from "@/components/ProductCard"
 import Link from "next/link"
 import type { Product } from "@/lib/types"
+import { getT } from "@/lib/i18n/server"
 
 export const dynamic = "force-dynamic"
 
@@ -11,6 +12,7 @@ export async function generateStaticParams() {
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { t } = await getT()
   const { slug } = await params
   const category = categories.find((c) => c.slug === slug)
 
@@ -53,9 +55,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     return (
       <div className="mx-auto max-w-7xl px-4 py-20 text-center">
         <div className="text-4xl mb-4">🔍</div>
-        <h1 className="text-2xl font-bold text-zinc-900 mb-2">Kategorie nicht gefunden</h1>
-        <p className="text-zinc-500 mb-6">Die angeforderte Kategorie existiert nicht.</p>
-        <Link href="/products" className="text-indigo-600 hover:text-indigo-500">Alle Produkte anzeigen →</Link>
+        <h1 className="text-2xl font-bold text-zinc-900 mb-2">{t("category.not_found")}</h1>
+        <p className="text-zinc-500 mb-6">{t("category.not_found_desc")}</p>
+        <Link href="/products" className="text-indigo-600 hover:text-indigo-500">{t("category.show_all")}</Link>
       </div>
     )
   }
@@ -64,13 +66,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <Link href="/products" className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors mb-2 inline-block">
-          ← Alle Produkte
+          {t("category.back")}
         </Link>
         <div className="flex items-center gap-3">
           {category?.icon && <span className="text-3xl">{category.icon}</span>}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900">{category?.name || slug}</h1>
-            <p className="text-sm text-zinc-400 mt-1">{products.length} Produkte</p>
+            <p className="text-sm text-zinc-400 mt-1">{t("categories.product_count", { n: products.length })}</p>
           </div>
         </div>
       </div>
@@ -94,7 +96,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       {products.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-4xl mb-4">📦</div>
-          <p className="text-zinc-400">Keine Produkte in dieser Kategorie.</p>
+          <p className="text-zinc-400">{t("category.empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase-client"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export function PriceAlertForm({ productShopId, productName }: { productShopId: string; productName: string }) {
+  const { t } = useT()
   const [price, setPrice] = useState("")
   const [saved, setSaved] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -36,7 +38,7 @@ export function PriceAlertForm({ productShopId, productName }: { productShopId: 
   if (saved) {
     return (
       <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-        ✅ Alarm für CHF {price} eingerichtet!
+        {t("product.pricealert.done", { price })}
       </div>
     )
   }
@@ -46,7 +48,7 @@ export function PriceAlertForm({ productShopId, productName }: { productShopId: 
       <input
         type="number"
         step="0.01"
-        placeholder="Zielpreis CHF"
+        placeholder={t("product.pricealert.placeholder")}
         value={price}
         onChange={(e) => setPrice(e.target.value)}
         className="h-10 rounded-xl border border-zinc-200 px-3 text-sm w-32"
@@ -55,7 +57,7 @@ export function PriceAlertForm({ productShopId, productName }: { productShopId: 
         type="submit"
         className="h-10 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
       >
-        Alarm setzen
+        {t("product.pricealert.set")}
       </button>
     </form>
   )

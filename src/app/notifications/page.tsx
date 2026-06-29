@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase-client"
 import Link from "next/link"
+import { useT } from "@/lib/i18n/LocaleProvider"
 
 export default function NotificationsPage() {
+  const { t, locale } = useT()
   const [notifications, setNotifications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -40,11 +42,11 @@ export default function NotificationsPage() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-3">🔔</div>
-          <h1 className="text-xl font-bold text-zinc-800 mb-2">Benachrichtigungen</h1>
-          <p className="text-sm text-zinc-500 mb-4">Bitte anmelden um Benachrichtigungen zu sehen.</p>
+          <h1 className="text-xl font-bold text-zinc-800 mb-2">{t("notifications.title")}</h1>
+          <p className="text-sm text-zinc-500 mb-4">{t("notifications.login")}</p>
           <button onClick={() => supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/notifications` } })}
             className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2 text-sm text-white hover:from-indigo-500 hover:to-purple-500 transition-all shadow-md">
-            Mit Google anmelden
+            {t("notifications.login_google")}
           </button>
         </div>
       </div>
@@ -57,23 +59,23 @@ export default function NotificationsPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-800">Benachrichtigungen</h1>
-          <p className="text-sm text-zinc-400 mt-1">{unreadCount} ungelesen</p>
+          <h1 className="text-2xl font-bold text-zinc-800">{t("notifications.title")}</h1>
+          <p className="text-sm text-zinc-400 mt-1">{t("notifications.unread", { n: unreadCount })}</p>
         </div>
         {unreadCount > 0 && (
           <button onClick={markAllRead} className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors">
-            Alle als gelesen markieren
+            {t("notifications.mark_all_read")}
           </button>
         )}
       </div>
 
       {loading ? (
-        <p className="text-zinc-400">Wird geladen...</p>
+        <p className="text-zinc-400">{t("notifications.loading")}</p>
       ) : notifications.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-5xl mb-4">🔔</div>
-          <p className="text-zinc-500">Keine Benachrichtigungen</p>
-          <Link href="/products" className="text-sm text-indigo-600 hover:text-indigo-500 mt-2 inline-block">Produkte durchstöbern →</Link>
+          <p className="text-zinc-500">{t("notifications.empty")}</p>
+          <Link href="/products" className="text-sm text-indigo-600 hover:text-indigo-500 mt-2 inline-block">{t("notifications.browse")}</Link>
         </div>
       ) : (
         <div className="space-y-2">
@@ -86,10 +88,10 @@ export default function NotificationsPage() {
                     <span className="text-sm font-medium text-zinc-800">{n.title}</span>
                   </div>
                   {n.message && <p className="text-sm text-zinc-500 mt-1 ml-4">{n.message}</p>}
-                  <p className="text-xs text-zinc-400 mt-2 ml-4">{new Date(n.created_at).toLocaleString("de-CH")}</p>
+                  <p className="text-xs text-zinc-400 mt-2 ml-4">{new Date(n.created_at).toLocaleString(locale === "de" ? "de-CH" : locale)}</p>
                 </div>
                 {!n.is_read && (
-                  <button onClick={() => markRead(n.id)} className="text-xs text-indigo-600 hover:text-indigo-500 shrink-0">Als gelesen</button>
+                  <button onClick={() => markRead(n.id)} className="text-xs text-indigo-600 hover:text-indigo-500 shrink-0">{t("notifications.mark_read")}</button>
                 )}
               </div>
             </div>
