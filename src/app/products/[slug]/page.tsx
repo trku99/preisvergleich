@@ -12,7 +12,7 @@ async function getProduct(slug: string) {
   try {
     const { data } = await supabase
       .from("products")
-      .select(`id, name, slug, brand, description, image_url, ean, variant_of, category:categories(name, slug)`)
+      .select(`id, name, slug, brand, description, image_url, ean, variant_of, galaxus_id, galaxus_price, galaxus_currency, galaxus_in_stock, galaxus_updated_at, category:categories(name, slug)`)
       .eq("slug", slug)
       .single()
 
@@ -62,14 +62,28 @@ async function getProduct(slug: string) {
         if (children) variants = [{ name: data.name, slug: data.slug }, ...children]
       }
 
+      const galaxusPrice = data.galaxus_price ? {
+        price: Number(data.galaxus_price),
+        currency: data.galaxus_currency || "CHF",
+        inStock: data.galaxus_in_stock,
+        shopId: "galaxus",
+        url: data.galaxus_id ? `https://www.galaxus.ch/product/${data.galaxus_id}` : "#",
+        isPromotion: false,
+        updatedAt: data.galaxus_updated_at?.split("T")[0] || "",
+        isReal: true,
+      } : null
+
       return {
         id: data.id, name: data.name, slug: data.slug, brand: data.brand || "",
         description: data.description || "",
         image: data.image_url || `https://placehold.co/600x600/6366f1/ffffff?text=${encodeURIComponent((data.brand || data.name).slice(0, 2).toUpperCase())}`,
         category: (data.category as any)?.name || "", categorySlug: (data.category as any)?.slug || "",
         ean: data.ean || "", currency: "CHF" as const,
-        lowestPrice: prices[0]?.price || 0, highestPrice: prices[prices.length - 1]?.price || 0,
-        shopCount: prices.length, prices, priceHistory: avgHistory,
+        lowestPrice: prices[0]?.price || galaxusPrice?.price || 0,
+        highestPrice: prices[prices.length - 1]?.price || galaxusPrice?.price || 0,
+        shopCount: prices.length + (galaxusPrice ? 1 : 0),
+        prices: galaxusPrice ? [galaxusPrice, ...prices] : prices,
+        priceHistory: avgHistory,
         variants,
       } as any
     }
@@ -161,7 +175,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                         {shop?.logo || price.shopId[0].toUpperCase()}
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-zinc-900">{shop?.name || price.shopId}</p>
+                        <p className="text-sm font-medium text-zinc-900">
+                          {shop?.name || price.shopId}
+                          {price.isReal && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-semibold">REAL</span>}
+                        </p>
                         <p className="text-xs text-zinc-400">
                           {price.inStock ? t("product.instock") : t("product.outofstock")} · {price.updatedAt}
                         </p>

@@ -13,6 +13,7 @@ const navItems = [
   { href: "/admin/shops", label: "Geschäfte", icon: "🏪" },
   { href: "/admin/prices", label: "Preise", icon: "💰" },
   { href: "/admin/crawler", label: "Datenabruf", icon: "🕷️" },
+  { href: "/admin/galaxus", label: "Galaxus Sync", icon: "🔄" },
   { href: "/admin/campaigns", label: "Aktionen", icon: "🏆" },
   { href: "/admin/admin-accounts", label: "Administratoren", icon: "🔐" },
   { href: "/admin/reviews", label: "Bewertungen", icon: "⭐" },
